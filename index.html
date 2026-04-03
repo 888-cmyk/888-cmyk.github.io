@@ -1,15 +1,12 @@
-```html
 <!DOCTYPE html>
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>信管专业 · 个人画像导航</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 这里粘贴你原来导航页的完整 CSS 样式（从之前的代码里复制） */
-        /* 由于篇幅，我假设你已经保留，请复制你原有样式到此处 */
-        * {
+ * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -169,100 +166,80 @@
 <div class="container">
     <div class="header">
         <h1><i class="fas fa-users"></i> 信管专业 · 个人画像导航</h1>
-        <p>点击卡片查看详细画像 | 数据动态更新</p >
+        <p>点击卡片查看详细画像 | 数据动态更新</p>
     </div>
-    
     <div class="stats">
-        <div class="stat-item">
-            <div class="stat-number" id="totalCount">0</div>
-            <div class="stat-label">总人数</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number" id="visibleCount">0</div>
-            <div class="stat-label">当前显示</div>
-        </div>
+        <div class="stat-item"><div class="stat-number" id="totalCount">0</div><div class="stat-label">总人数</div></div>
+        <div class="stat-item"><div class="stat-number" id="visibleCount">0</div><div class="stat-label">当前显示</div></div>
     </div>
-    
     <div class="search-box">
         <i class="fas fa-search"></i>
         <input type="text" id="searchInput" placeholder="按姓名、学号、技能或地区搜索...">
     </div>
-    
-    <div class="student-grid" id="studentGrid">
-        <div class="no-result">加载数据中...</div>
-    </div>
-    
-    <footer>
-        <i class="fas fa-database"></i> 数据来源：学生档案 | 每学期更新
-    </footer>
+    <div class="student-grid" id="studentGrid">加载中...</div>
+    <footer><i class="fas fa-database"></i> 数据来源：学生档案 | 每学期更新</footer>
 </div>
 
 <script>
-    let studentsData = []; // 存储从 JSON 加载的数据
+    let studentsData = [];
 
-    // 渲染网格
+    async function loadData() {
+        try {
+            const res = await fetch('students.json');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            studentsData = data;
+            renderStudents('');
+        } catch (err) {
+            console.error(err);
+            document.getElementById('studentGrid').innerHTML = '<div class="no-result">数据加载失败，请检查网络或稍后重试</div>';
+        }
+    }
+
     function renderStudents(filterText) {
         const grid = document.getElementById('studentGrid');
         const searchTerm = filterText.toLowerCase().trim();
-        
         let filtered = studentsData;
         if (searchTerm !== '') {
             filtered = studentsData.filter(s => 
                 s.name.toLowerCase().includes(searchTerm) ||
                 s.id.toLowerCase().includes(searchTerm) ||
-                s.hometown.toLowerCase().includes(searchTerm) ||
-                (s.skills && s.skills.some(skill => skill.toLowerCase().includes(searchTerm)))
+                (s.hometown && s.hometown.toLowerCase().includes(searchTerm)) ||
+                (s.skills && s.skills.toLowerCase().includes(searchTerm))
             );
         }
-        
         document.getElementById('totalCount').innerText = studentsData.length;
         document.getElementById('visibleCount').innerText = filtered.length;
-        
+
         if (filtered.length === 0) {
             grid.innerHTML = '<div class="no-result">😢 没有找到符合条件的同学，试试其他关键词~</div>';
             return;
         }
-        
+
         let html = '';
         filtered.forEach(s => {
-            // 技能和兴趣可能是数组，也可能是字符串，这里做兼容
-            let skillArray = Array.isArray(s.skills) ? s.skills : (s.skills ? s.skills.split(',') : []);
-            let interestArray = Array.isArray(s.interests) ? s.interests : (s.interests ? s.interests.split(',') : []);
-            const skillTags = skillArray.map(skill => `<span class="tag">${skill.trim()}</span>`).join('');
-            const interestTags = interestArray.map(interest => `<span class="tag">${interest.trim()}</span>`).join('');
-            
+            const skillArray = s.skills ? s.skills.split(',').map(t => t.trim()) : [];
+            const interestArray = s.interests ? s.interests.split(',').map(t => t.trim()) : [];
+            const allTags = [...skillArray, ...interestArray];
+            const tagHtml = allTags.map(tag => `<span class="tag">${tag}</span>`).join('');
             html += `
                 <div class="student-card" onclick="window.location.href='student.html?id=${encodeURIComponent(s.id)}'">
                     <div class="card-avatar">${s.avatarInitial || s.name.substring(0,2).toUpperCase()}</div>
                     <h3>${s.name}</h3>
-                    <p><i class="fas fa-id-card"></i> ${s.id}</p >
-                    <p><i class="fas fa-map-marker-alt"></i> ${s.hometown}</p >
-                    <div class="tags">
-                        ${skillTags}
-                        ${interestTags}
-                    </div>
+                    <p><i class="fas fa-id-card"></i> ${s.id}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> ${s.hometown || '未知'}</p>
+                    <div class="tags">${tagHtml}</div>
                 </div>
             `;
         });
         grid.innerHTML = html;
     }
-    
-    // 监听搜索输入
+
     document.getElementById('searchInput').addEventListener('input', (e) => {
         renderStudents(e.target.value);
     });
-    
-    // 加载 JSON 数据
-    fetch('students.json')
-        .then(response => response.json())
-        .then(data => {
-            studentsData = data;
-            renderStudents('');
-        })
-        .catch(error => {
-            console.error('加载数据失败:', error);
-            document.getElementById('studentGrid').innerHTML = '<div class="no-result">❌ 数据加载失败，请稍后重试</div>';
-        });
+
+    loadData();
 </script>
 </body>
 </html>
