@@ -2,37 +2,207 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>管理学院B部 · 学生画像导航</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto; }
-        body { background: #f0f4fa; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { text-align: center; margin-bottom: 20px; font-size: 28px; color: #1e2b4a; }
-        .stats { background: white; border-radius: 32px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; }
-        .stat-number { font-size: 28px; font-weight: bold; color: #1e3b5a; }
-        .filter-bar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .filter-btn { background: white; border: none; padding: 8px 20px; border-radius: 40px; font-size: 15px; cursor: pointer; }
-        .filter-btn.active { background: #2b5f8a; color: white; }
-        .search-box { background: white; border-radius: 60px; padding: 10px 20px; margin-bottom: 20px; }
-        .search-box input { width: 100%; border: none; outline: none; font-size: 16px; background: transparent; }
-        .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .student-card { background: white; border-radius: 24px; padding: 20px; cursor: pointer; transition: all 0.2s; }
-        .student-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .card-avatar { width: 50px; height: 50px; border-radius: 20px; object-fit: cover; background: #2b5876; color: white; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; margin-bottom: 15px; }
-        .student-card h3 { font-size: 18px; margin-bottom: 8px; }
-        .student-card p { font-size: 13px; color: #666; margin-bottom: 5px; }
-        .major-tag { display: inline-block; background: #e8f0fe; padding: 4px 12px; border-radius: 20px; font-size: 12px; color: #2b5f8a; margin-top: 10px; }
-        .no-result { text-align: center; padding: 60px; color: #6c86a3; }
-        footer { text-align: center; margin-top: 40px; font-size: 13px; color: #8aa0bc; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body {
+            background: linear-gradient(145deg, #f0f4fa 0%, #e6ecf5 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(115deg, #1e2b4a, #2c3e6e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #4a627a;
+        }
+        .stats {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .stat-item {
+            flex: 1;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e3b5a;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #5f7a9a;
+        }
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(4px);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #1e2b4a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .filter-btn.active {
+            background: #2b5f8a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(43,95,138,0.3);
+        }
+        .search-box {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 60px;
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .search-box i {
+            color: #8aa0bc;
+            margin-right: 12px;
+        }
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            background: transparent;
+            padding: 12px 0;
+        }
+        .student-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .student-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(8px);
+            border-radius: 28px;
+            padding: 20px;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.7);
+            cursor: pointer;
+        }
+        .student-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255,255,255,0.9);
+        }
+        /* 头像样式：支持图片和字母两种模式 */
+        .card-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        .card-avatar-fallback {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #2b5876, #4e4376);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .student-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2c42;
+            margin-bottom: 8px;
+        }
+        .student-card p {
+            font-size: 13px;
+            color: #5f7a9a;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .student-card p i {
+            width: 20px;
+        }
+        .major-tag {
+            display: inline-block;
+            background: rgba(43,95,138,0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #2b5f8a;
+            margin-top: 8px;
+        }
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .tag {
+            background: rgba(67,108,145,0.12);
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #2c5a7a;
+        }
+        .no-result {
+            text-align: center;
+            padding: 60px;
+            color: #6c86a3;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 13px;
+            color: #8aa0bc;
+        }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>📊 管理学院B部 · 学生画像导航</h1>
+    <div class="header">
+        <h1><i class="fas fa-building"></i> 管理学院B部 · 学生画像导航</h1>
+        <p>点击卡片查看详细画像 | 支持按专业筛选</p >
+    </div>
 
     <div class="stats">
-        <div><div class="stat-number" id="totalCount">0</div><div>总人数</div></div>
-        <div><div class="stat-number" id="visibleCount">0</div><div>当前显示</div></div>
+        <div class="stat-item"><div class="stat-number" id="totalCount">0</div><div class="stat-label">总人数</div></div>
+        <div class="stat-item"><div class="stat-number" id="visibleCount">0</div><div class="stat-label">当前显示</div></div>
     </div>
 
     <div class="filter-bar" id="filterBar">
@@ -43,11 +213,12 @@
     </div>
 
     <div class="search-box">
-        <input type="text" id="searchInput" placeholder="🔍 按姓名、学号、专业或地区搜索...">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="按姓名、学号、专业或地区搜索...">
     </div>
 
     <div class="student-grid" id="studentGrid">加载中...</div>
-    <footer>数据来源：学院档案 | 每学期更新</footer>
+    <footer><i class="fas fa-database"></i> 数据来源：学院档案 | 每学期更新</footer>
 </div>
 
 <script>
@@ -57,26 +228,31 @@
     async function loadData() {
         try {
             const res = await fetch('students.json');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
             studentsData = data;
             renderStudents();
         } catch (err) {
-            document.getElementById('studentGrid').innerHTML = '<div class="no-result">数据加载失败</div>';
+            console.error(err);
+            document.getElementById('studentGrid').innerHTML = '<div class="no-result">数据加载失败，请检查网络或稍后重试</div>';
         }
     }
 
     function renderStudents() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
         let filtered = studentsData;
+
         if (currentMajor !== 'all') {
             filtered = filtered.filter(s => s.major === currentMajor);
         }
-        if (searchTerm) {
+
+        if (searchTerm !== '') {
             filtered = filtered.filter(s => 
                 (s.name && s.name.toLowerCase().includes(searchTerm)) ||
-                (s.id && s.id.includes(searchTerm)) ||
+                (s.id && s.id.toLowerCase().includes(searchTerm)) ||
                 (s.major && s.major.toLowerCase().includes(searchTerm)) ||
-                (s.hometown && s.hometown.toLowerCase().includes(searchTerm))
+                (s.hometown && s.hometown.toLowerCase().includes(searchTerm)) ||
+                (s.skills && s.skills.toLowerCase().includes(searchTerm))
             );
         }
 
@@ -85,28 +261,40 @@
 
         const grid = document.getElementById('studentGrid');
         if (filtered.length === 0) {
-            grid.innerHTML = '<div class="no-result">没有找到符合条件的同学</div>';
+            grid.innerHTML = '<div class="no-result">😢 没有找到符合条件的同学，试试其他关键词~</div>';
             return;
         }
 
         let html = '';
-        for (let s of filtered) {
-            let avatarHtml = '';
-            if (s.avatarUrl) {
-                avatarHtml = `< img class="card-avatar" src="${s.avatarUrl}" onerror="this.onerror=null; this.src='';">`;
+        filtered.forEach(s => {
+            const skillArray = s.skills ? s.skills.split(',').map(t => t.trim()) : [];
+            const interestArray = s.interests ? s.interests.split(',').map(t => t.trim()) : [];
+            const allTags = [...skillArray, ...interestArray];
+            const tagHtml = allTags.map(tag => `<span class="tag">${tag}</span>`).join('');
+            
+            // 头像部分：如果有照片链接就显示照片，否则显示字母头像
+            let avatarHtml;
+            if (s.avatarUrl && s.avatarUrl !== '') {
+                avatarHtml = `
+                    < img class="card-avatar" src="${s.avatarUrl}" alt="${s.name}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="card-avatar-fallback" style="display: none;">${s.avatarInitial || s.name.substring(0,2).toUpperCase()}</div>
+                `;
             } else {
-                avatarHtml = `<div class="card-avatar">${(s.avatarInitial || s.name.slice(0,2)).toUpperCase()}</div>`;
+                avatarHtml = `<div class="card-avatar-fallback">${s.avatarInitial || s.name.substring(0,2).toUpperCase()}</div>`;
             }
+            
             html += `
-                <div class="student-card" onclick="location.href='student.html?id=${encodeURIComponent(s.id)}'">
+                <div class="student-card" onclick="window.location.href='student.html?id=${encodeURIComponent(s.id)}'">
                     ${avatarHtml}
                     <h3>${s.name}</h3>
-                    <p>📚 ${s.id}</p >
-                    <p>📍 ${s.hometown || '未知'}</p >
-                    <div class="major-tag">${s.major || '专业未填'}</div>
+                    <p><i class="fas fa-id-card"></i> ${s.id}</p >
+                    <p><i class="fas fa-map-marker-alt"></i> ${s.hometown || '未知'}</p >
+                    <div class="major-tag"><i class="fas fa-graduation-cap"></i> ${s.major || '专业未填'}</div>
+                    <div class="tags">${tagHtml}</div>
                 </div>
             `;
-        }
+        });
         grid.innerHTML = html;
     }
 
@@ -118,7 +306,9 @@
             renderStudents();
         });
     });
+
     document.getElementById('searchInput').addEventListener('input', () => renderStudents());
+
     loadData();
 </script>
 </body>
